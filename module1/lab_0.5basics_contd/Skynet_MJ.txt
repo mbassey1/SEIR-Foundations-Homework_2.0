@@ -1,0 +1,3 @@
+Spotter = John Walker 
+Teammates = John Walker, Bacchus Gudder, Brent Johnson, Daniel Cockrell, Ronnie Baker, MJ Bass
+Days + Times when our team meets = We have not settled on a date yet but have sent out a poll to determine everyone's meeting times. 
