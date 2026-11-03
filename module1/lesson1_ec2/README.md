@@ -1,0 +1,9 @@
+| Run   | Date | Time zone| Instance ID |Boot Time (UTC)| PublicIPv4 | DNS | Screenshot | Terminated? |
+|----------|----------|----------|----------|----------|----------|----------|----------|----------|
+| 1     | 10.29.2026     | PDT     | i-058b825486164ac52    |2026-10-29 23:33:19 | 52.90.24.34    | ec2-52-90-24-34.compute-1.amazonaws.com   | [lab1_run1.jpg](screenshots/lab1_run1.jpg)   | Yes
+| 2    | 10.29.2026     | PDT     |i-02c159211383f4c8a | 2026-10-30 00:14:22    | 35.175.185.20     | ec2-35-175-185-20.compute-1.amazonaws.com    | [lab1_run2.jpg](screenshots/lab1_run2.jpg) | Yes     |
+| 3     | 10.30.2026    | PDT     |i-02b1543090947c89f| 2026-10-30 08:39:47     | 3.80.105.154     | ec2-3-80-105-154.compute-1.amazonaws.com    |  [lab1_run3.jpg](screenshots/lab1_run3.jpg)     | Yes     |
+| 4     | 10.30.2026     | PDT     |i-015a6d10a253e00dc| 2026-10-30 13:52:06     | 52.23.203.41     | ec2-52-23-203-41.compute-1.amazonaws.com    | [lab1_run4.jpg](screenshots/lab1_run4.jpg)     | Yes       |
+| 5     |10.30.2026     | PDT     |i-08e13455621c69c05| 2026-10-30 23:12:36    | 54.221.141.227     | ec2-54-221-141-227.compute-1.amazonaws.com    |  [lab1_run5.jpg](screenshots/lab1_run5.jpg)     | Yes       |
+| 6     | 10.31.2026     | PDT     | i-01ae1a60ce3c4b255       | 2026-10-31 17:15:02  | 98.93.17.227     | ec2-98-93-17-227.compute-1.amazonaws.com   |   [lab1_run6.jpg](screenshots/lab1_run6.jpg)    | Yes       |
+| 7     | 11.1.2026     | PDT     |  i-0100e3e2bbab1df12  |2026-11-01 07:56:48|  3.80.95.202    |   ec2-3-80-95-202.compute-1.amazonaws.com  |  [lab1_run7.jpg](screenshots/lab1_run7.jpg)    | Yes       |

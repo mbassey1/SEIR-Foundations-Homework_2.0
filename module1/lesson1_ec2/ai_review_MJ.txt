@@ -1,0 +1,20 @@
+I asked my AI the following five questions (my transcript is attached in a separate file labeled <ai_review_transcript_MJ.txt>): 
+ 
+1: Could you help me understand what the purpose of [class runbook that I copied] is?
+2: What is COBOL? 
+3: So GnuCOBOL bridges the gap between COBOL and FastAPI?
+4: So then Python is used to bridge between COBOL and FastAPI?
+5: How is Python used to create a bridge? Please go into detail on this. 
+
+I checked the answer to question 1 by correlating the COBOL information to commands in the official syntax guide. 
+I checked the answer to question 2 by correlating the answer to what was on the official IBM developer COBOL webpage. 
+I checked the answer to question 3 by correlating the answer to what was on the official GnuCOBOL Programmer's guide webpage.
+I checked the answer to question 4 by correlating the answer to what was on the cobol-rest-bridge repo on Git (<https://github.com/makedirectory/cobol-rest-bridge.git>). 
+I checked the answer to question 5 by correlating the answer to blog posts by experienced developers who had practical experience migrating COBOL to Python then creating FastAPIs. 
+
+Kimi AI did not produce any answers that were wrong. 
+
+One place Kimi AI was vague was in describing how Python bridges COBOL and FastAPI. It made it sound like Python does it automatically but in reality it requires commands to execute. 
+
+One place the AI was out of date was  "simulated SWIFT MT103 payment messages to test the complete flow." 
+SWIFT's coexistence period ended on November 22, 2025. Starting from that date, payment instructions between financial institutions must use the ISO 20022 standard (specifically the pacs.008 message type), and can no longer use the legacy MT format.

@@ -1,0 +1,35 @@
+Databases
+
+In this section I learned that one of the major categories used to classify databases is 
+whether they're SQL or NoSQL. A database that uses the SQL language means data must have some type of relation 
+to one another in order for it to be processed. This is good for multi-row transactions. NoSQL on the other hand
+allows for unstructured data. This is good when working with JSON-heavy workflows. 
+
+COBOL 
+
+I learned that COBOL is a language that is verbose but holds an easy-to-follow hierarchy. Every column represents certain characters 
+in a string of words, which makes it easy to follow. Most ATMs and credit card transactions run on COBOL today (DEV Community June 2026), making 
+it a language with longevity. Some in the developer community have wanted to replace it because its hierachy and 600 commands are cumbersome for some people. 
+However developers are reluctant to do this due to how complicated and risky it would be to do so. This makes the field relatively stable in the long term. 
+
+
+SWIFT 
+I learned that SWIFT is a foreign exchange messaging service used to channel money between countries. Banks hold vostro and nostro accounts with each other's
+currency so that they can readily dispense money once the SWIFT message comes. SWIFT has faced competition in recent years from Chinese alternatives. Stablecoins 
+have also appeared through blockchains as a way to settle money. Blockchains are competitive as conventional SWIFT transctions take multiple days to settle between 
+countries. 
+
+
+APIs
+An API is an Application Programming Interface. There are different APIs such as REST, GraphQK, gRPC, and WebSocket. However, REST APIs are the dominant style. This 
+is because REST APIs are versatile when attempting to connect applications and web pages with cloud-based servers. Some of the main benefits of a REST API are the simple, standardized
+approach to communication and its scalability/statelessness. In addition to not having to worry about formatting every single time I do a workflow, I am able to make modifications more 
+easily when my service grows. 
+
+
+Intersection of COBOL, SWIFT, APIs & databases
+
+In this section I learned that COBOL is a language that is seen as very useful but cumbersome by developers. 
+APIs are a way to simplify transactions that go through COBOL databases. They are also being used to route formats of COBOL origin through SWIFT networks. 
+A cool thing about APIs is that they do not need to rewrite or overhaul a process. Many APIs are able to copy the most cumbersome parts of 
+workflows and condense them to an in-line process that saves time and still produces high quality results. 

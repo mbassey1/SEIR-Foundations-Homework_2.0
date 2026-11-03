@@ -1,0 +1,293 @@
+User:
+•	user_pasted_clipboard_long_content_as_file_# Balerica Legacy Ba.txt
+Could you help me understand what the purpose of this runbook is?
+________________________________________
+Kimi:
+Purpose
+This runbook is a beginner-friendly, hands-on lab that guides students through building and running a simulated bank on an AWS EC2 server. Its main lesson is legacy-system modernization: keeping a COBOL-based banking core while making it accessible through a modern FastAPI web API.
+It is an educational exercise, not a production banking operations or incident-response runbook.
+What you accomplish
+By following it, you:
+•	Clone the course repository and install the lab environment.
+•	Compile and run COBOL programs for account lookups and payment posting.
+•	Learn how fixed-width ledger records and mainframe-style return codes work.
+•	Start a FastAPI service that acts as a modern interface to the COBOL programs.
+•	Generate simulated SWIFT MT103 payment messages to test the complete flow.
+•	Explore the API through its browser-based documentation.
+•	Try an AI helper that answers questions using either Amazon Bedrock or an offline knowledge base.
+•	Learn how to stop, restart, and troubleshoot the environment.
+The underlying architecture
+The payment flow is essentially:
+SWIFT traffic generator → FastAPI → COBOL bridge → COBOL banking programs → fixed-width data files and SQLite
+This demonstrates how an organization might expose older banking logic to modern applications without immediately rewriting that logic.
+What success looks like
+The lab’s key checkpoint is that modern API traffic successfully reaches the COBOL core. Some payments are deliberately invalid, so REJECTED payments are expected; connectivity or server errors, reported as FAILED, are the actual problem.
+In short: it teaches foundational command-line, COBOL, API, payment-messaging, and AI-integration concepts by letting students safely operate a small end-to-end legacy banking platform.
+________________________________________
+User:
+What is COBOL?
+________________________________________
+Kimi:
+COBOL — short for Common Business-Oriented Language — is a programming language created in 1959 for business applications such as accounting, banking, insurance, and government record processing.
+It was designed to handle tasks like:
+•	Processing large volumes of transactions
+•	Reading and writing structured, fixed-width data records
+•	Performing precise financial calculations
+•	Producing reports and maintaining business ledgers
+COBOL code is compiled into programs and often uses English-like syntax. Conceptually, a program might contain instructions such as “read an account record, validate it, and update its balance.”
+Although it is decades old, COBOL remains important because many banks and public institutions still depend on large, reliable COBOL systems that would be expensive and risky to replace.
+In your runbook, GnuCOBOL—an open-source COBOL compiler—is used to build programs that look up accounts and post payments. FastAPI then provides a modern web interface to those older-style programs, demonstrating how legacy systems can be integrated with newer technology rather than completely rewritten.
+________________________________________
+User:
+So GnuCOBOL bridges the gap between COBOL and FastAPI?
+________________________________________
+Kimi:
+Not quite. GnuCOBOL is the compiler, not the bridge. It translates the COBOL source code into executable programs such as account_lookup and payment_post.
+In this lab, the bridge is primarily cobol_bridge.py, working with FastAPI:
+HTTP request
+    ↓
+FastAPI
+    ↓
+cobol_bridge.py
+    ↓  launches the program and passes arguments
+Compiled COBOL program
+    ↓  returns KEY=VALUE output and a return code
+FastAPI converts the result into an HTTP/JSON response
+So the roles are:
+•	GnuCOBOL: makes the COBOL programs runnable.
+•	COBOL programs: perform the account lookup or payment decision.
+•	cobol_bridge.py: handles communication between Python and those programs.
+•	FastAPI: exposes the functionality as a modern web API.
+The modernization pattern is therefore “wrap the COBOL core with an API,” rather than replace it.
+________________________________________
+User:
+So then Python is used to bridge between COBOL and FastAPI?
+________________________________________
+Kimi:
+Yes—specifically, cobol_bridge.py is the Python bridge between FastAPI and the compiled COBOL programs.
+FastAPI is itself a Python web framework, so the API and bridge belong to the same Python application. The flow is:
+1.	FastAPI receives an HTTP request.
+2.	It calls functions in cobol_bridge.py.
+3.	The bridge launches the appropriate COBOL program as a separate process and passes it arguments.
+4.	The COBOL program performs the banking logic and returns KEY=VALUE output plus a return code.
+5.	The bridge captures those results so FastAPI can return them as JSON.
+Python therefore handles the communication and translation, while COBOL still performs the core account-lookup and payment-processing work.
+________________________________________
+User:
+How is Python used to create a bridge? Please go into detail on this.
+________________________________________
+Kimi:
+Python creates the bridge by running each compiled COBOL program as a separate operating-system process, exchanging text with it, and converting the results into a form FastAPI can return as JSON.
+The COBOL code is not imported into Python like a normal Python module. Instead, Python acts as a caller and interpreter of the COBOL program’s results.
+1. The components have different responsibilities
+The runbook’s architecture looks like this:
+Client
+  │ HTTP request
+  ▼
+FastAPI endpoint
+  │ Python function call
+  ▼
+cobol_bridge.py
+  │ Starts a subprocess with command-line arguments
+  ▼
+Compiled COBOL program
+  │ Prints KEY=VALUE lines and exits with a return code
+  ▼
+cobol_bridge.py
+  │ Parses the output
+  ▼
+FastAPI endpoint
+  │ JSON response
+  ▼
+Client
+Each piece has a distinct job:
+•	FastAPI handles URLs, HTTP methods, request validation, and JSON responses.
+•	Python’s bridge code starts COBOL programs and interprets their output.
+•	COBOL performs the banking operations, such as finding an account or deciding whether a payment can be posted.
+•	GnuCOBOL compiles the COBOL source into executable programs before any of this happens.
+2. Python starts the COBOL program with subprocess
+Python’s standard-library subprocess module lets one program launch another.
+When you run this manually:
+./cobol/bin/account_lookup 100001
+you are providing:
+•	The program to run: ./cobol/bin/account_lookup
+•	One command-line argument: 100001
+Python can launch approximately the same command with:
+import subprocess
+
+completed = subprocess.run(
+    ["./cobol/bin/account_lookup", "100001"],
+    cwd="/opt/balerica-bank",
+    capture_output=True,
+    text=True,
+    timeout=10,
+)
+The argument list keeps the executable and each argument separate. Python does not need to construct one large shell command.
+The options do the following:
+•	cwd: Sets the working directory. This matters because the COBOL program expects to find files such as data/accounts.dat relative to /opt/balerica-bank.
+•	capture_output=True: Captures the program’s standard output and error output instead of displaying them directly in the server terminal.
+•	text=True: Returns that output as Python strings rather than raw bytes.
+•	timeout=10: Prevents the API request from waiting indefinitely if the COBOL process gets stuck.
+Afterward, completed contains three particularly important pieces of information:
+completed.args       # The command that was run
+completed.stdout     # Normal program output
+completed.stderr     # Error/diagnostic output
+completed.returncode # The program's exit code
+Strictly speaking, args is also available, but the last three are what the bridge primarily interprets.
+3. COBOL communicates through standard output
+The runbook shows that a successful lookup prints:
+ACCOUNT=100001
+NAME=Alice Johnson
+STATUS=ACTIVE
+BALANCE=5000.00
+CURRENCY=USD
+This is a deliberately simple interface. The COBOL program does not need to know anything about HTTP, JSON, web browsers, or FastAPI. It only needs to:
+1.	Read its command-line arguments.
+2.	Perform its banking operation.
+3.	Print predictable KEY=VALUE lines.
+4.	Exit with an appropriate return code.
+Standard output therefore becomes the data channel from COBOL back to Python.
+4. Python parses the text into a dictionary
+The bridge can split each output line at its first = character:
+def parse_key_value_output(output: str) -> dict[str, str]:
+    result = {}
+
+    for line in output.splitlines():
+        line = line.strip()
+
+        if not line or "=" not in line:
+            continue
+
+        key, value = line.split("=", 1)
+        result[key] = value
+
+    return result
+Given the COBOL output above, this produces:
+{
+    "ACCOUNT": "100001",
+    "NAME": "Alice Johnson",
+    "STATUS": "ACTIVE",
+    "BALANCE": "5000.00",
+    "CURRENCY": "USD",
+}
+Using split("=", 1) is important because it splits only at the first equals sign. If a value ever contained another =, the rest of that value would remain intact.
+At this point, the text has become structured Python data. FastAPI can serialize that dictionary into JSON automatically.
+5. A simplified bridge function
+Putting those steps together, a bridge could look like this:
+import subprocess
+
+BANK_DIR = "/opt/balerica-bank"
+
+
+def lookup_account(account_id: str) -> dict:
+    completed = subprocess.run(
+        ["./cobol/bin/account_lookup", account_id],
+        cwd=BANK_DIR,
+        capture_output=True,
+        text=True,
+        timeout=10,
+    )
+
+    output = {}
+
+    for line in completed.stdout.splitlines():
+        if "=" in line:
+            key, value = line.split("=", 1)
+            output[key] = value
+
+    return {
+        "return_code": completed.returncode,
+        "data": output,
+        "diagnostics": completed.stderr.strip(),
+    }
+This is a simplified illustration of the pattern, not necessarily the repository’s exact implementation.
+Calling:
+lookup_account("100001")
+might return:
+{
+    "return_code": 0,
+    "data": {
+        "ACCOUNT": "100001",
+        "NAME": "Alice Johnson",
+        "STATUS": "ACTIVE",
+        "BALANCE": "5000.00",
+        "CURRENCY": "USD",
+    },
+    "diagnostics": "",
+}
+The bridge preserves the return code instead of assuming that every nonzero code represents a crashed program.
+6. FastAPI exposes the bridge through an endpoint
+A simplified FastAPI endpoint could call the bridge like this:
+from fastapi import FastAPI, HTTPException
+
+app = FastAPI()
+
+
+@app.get("/accounts/{account_id}")
+def get_account(account_id: str):
+    result = lookup_account(account_id)
+    code = result["return_code"]
+
+    if code == 0:
+        return result["data"]
+
+    if code == 4:
+        raise HTTPException(status_code=404, detail="Account not found")
+
+    if code == 12:
+        raise HTTPException(status_code=500, detail="COBOL environment failure")
+
+    raise HTTPException(status_code=500, detail="Unexpected core-banking result")
+A request such as:
+GET /accounts/100001
+could then produce:
+{
+  "ACCOUNT": "100001",
+  "NAME": "Alice Johnson",
+  "STATUS": "ACTIVE",
+  "BALANCE": "5000.00",
+  "CURRENCY": "USD"
+}
+The browser sees ordinary JSON and remains unaware that COBOL produced the answer.
+7. Return codes communicate outcomes separately from data
+The runbook uses four return-code categories:
+Code	Meaning	Possible API interpretation
+0	Success	Return the result normally
+4	Account not found	Return a client-facing “not found” response
+8	Business rejection	Return the rejection and its reason
+12	Environment failure	Treat it as a server/platform error
+This separation matters. For example, a payment can be successfully processed by the COBOL program but rejected because the account is inactive or has insufficient funds. That is different from the program failing to open its ledger file.
+The bridge therefore needs to examine both:
+•	The parsed output, such as STATUS=REJECTED and REASON=...
+•	The return code, which classifies the outcome
+It should not simply use Python’s check=True and treat every nonzero exit as an unexpected exception, because codes 4 and 8 can be meaningful business outcomes.
+8. Payment posting uses the same pattern
+For payments, Python would launch something equivalent to:
+./cobol/bin/payment_post TXN0001 100001 125.50 USD INV-1001
+In Python, that becomes an argument list such as:
+[
+    "./cobol/bin/payment_post",
+    "TXN0001",
+    "100001",
+    "125.50",
+    "USD",
+    "INV-1001",
+]
+The COBOL program then:
+1.	Reads those arguments.
+2.	Checks the account and payment.
+3.	Posts or rejects the transaction.
+4.	Writes the appropriate record.
+5.	Prints fields such as TXN, STATUS, and REASON.
+6.	Exits with a return code.
+Python captures and parses that output just as it does for account lookups.
+9. Why this approach is useful
+This bridge allows the two technologies to remain loosely coupled:
+•	COBOL can continue handling established business rules and record formats.
+•	FastAPI can provide modern HTTP and JSON interfaces.
+•	Neither side needs to understand the other’s internal implementation.
+•	The COBOL programs can still be tested directly from the command line.
+•	The interface is easy to inspect because it consists of arguments, text output, and numeric return codes.
+The trade-off is that launching a process and parsing text introduces overhead and requires careful error handling. A production version would also need input validation, timeouts, useful logging, concurrency controls around shared files, and protection against unsafe command construction.
+In essence, the Python bridge is a translator and coordinator: it turns API requests into COBOL program invocations, then turns COBOL’s textual output and return codes back into API responses.
+________________________________________
